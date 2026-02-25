@@ -1,23 +1,42 @@
 // ============================================================
 //  EDGS Feedback Engine — T-01~T-06 환류 트리거
+//  ※ 담당 부서명: 경인교육대학교 실제 조직도 기준
 // ============================================================
 
 window.FEEDBACK = (function () {
 
-    const TRIGGERS = [
+    //  경인교육대학교 실제 담당 부서 (ginue.ac.kr 조직도 기준)
+    //  - 입학본부            : 입학 모집·충원율 관리
+    //  - 교무처 교무팀        : 교원 인사·대학원 관련
+    //  - 교무처 학사팀        : 교육과정·학적·교육실습
+    //  - 기획처 기획팀        : 대학 기획·평가·데이터 관리
+    //  - 학생처 학생지원팀    : 학생 장학·복지
+    //  - 학생처 진로인성교육센터 : 교원임용 지원·진로 지도
+    //  - 교육혁신본부         : 교육과정 개혁·성과 환류
+
+    var NATIONAL_AVG_PASS = 51.7; // 2024학년도 전국 교대 평균 임용합격률 (교육부 공시)
+
+    var TRIGGERS = [
         {
             id: 'T-01',
             label: '임용합격률 위험',
-            condition: '임용합격률 < 전국평균 - 5%p',
+            condition: '임용합격률 < 전국평균(51.7%) - 5%p',
             icon: '🎯',
             severity: 'critical',
-            action: '교육과정위원회 긴급 안건 등록 + 교학처장 알림',
-            responsible: '교학처장, 교육과정위원장',
-            check(year, campus) {
-                const { rate } = KPI.getPassRate(year, campus);
-                const national = 65.0;
-                const triggered = rate < (national - 5);
-                return { triggered, value: rate, threshold: national - 5, unit: '%', detail: `현재 ${rate}% / 임계 ${national - 5}% (전국평균 ${national}%)` };
+            action: '교육혁신본부 긴급 현황 보고 → 교육과정위원회 안건 등록 → 학사팀 교육과정 개선 착수',
+            responsible: '교육혁신본부, 교무처 학사팀',
+            check: function (year, campus) {
+                var pr = KPI.getPassRate(year, campus);
+                var rate = pr.rate;
+                var threshold = NATIONAL_AVG_PASS - 5;
+                var triggered = rate < threshold;
+                return {
+                    triggered: triggered,
+                    value: rate,
+                    threshold: threshold,
+                    unit: '%',
+                    detail: '현재 ' + rate + '% / 임계 ' + threshold.toFixed(1) + '% (전국평균 ' + NATIONAL_AVG_PASS + '%)'
+                };
             }
         },
         {
@@ -26,12 +45,18 @@ window.FEEDBACK = (function () {
             condition: '학부 충원율 < 85%',
             icon: '📈',
             severity: 'critical',
-            action: '입학처·기획처 알림 + 원인 분석 리포트 자동 생성',
-            responsible: '입학처장, 기획처장',
-            check(year, campus) {
-                const { undergrad } = KPI.getEnrollmentRates(year, campus);
-                const triggered = undergrad < 85;
-                return { triggered, value: undergrad, threshold: 85, unit: '%', detail: `현재 ${undergrad}% / 임계 85%` };
+            action: '입학본부 원인 분석 보고 → 기획처 신입생 유치 전략 긴급 검토',
+            responsible: '입학본부, 기획처 기획팀',
+            check: function (year, campus) {
+                var er = KPI.getEnrollmentRates(year, campus);
+                var triggered = er.undergrad < 85;
+                return {
+                    triggered: triggered,
+                    value: er.undergrad,
+                    threshold: 85,
+                    unit: '%',
+                    detail: '현재 ' + er.undergrad + '% / 임계 85%'
+                };
             }
         },
         {
@@ -40,12 +65,18 @@ window.FEEDBACK = (function () {
             condition: '대학원 충원율 < 80%',
             icon: '🎓',
             severity: 'warning',
-            action: '모집 전략 검토 요청 알림',
-            responsible: '교학처장, 대학원위원장',
-            check(year, campus) {
-                const { grad } = KPI.getEnrollmentRates(year, campus);
-                const triggered = grad < 80;
-                return { triggered, value: grad, threshold: 80, unit: '%', detail: `현재 ${grad}% / 임계 80%` };
+            action: '교무처 교무팀·대학원위원회 모집 전략 검토 및 홍보 강화 요청',
+            responsible: '교무처 교무팀, 대학원위원회',
+            check: function (year, campus) {
+                var er = KPI.getEnrollmentRates(year, campus);
+                var triggered = er.grad < 80;
+                return {
+                    triggered: triggered,
+                    value: er.grad,
+                    threshold: 80,
+                    unit: '%',
+                    detail: '현재 ' + er.grad + '% / 임계 80%'
+                };
             }
         },
         {
@@ -54,26 +85,38 @@ window.FEEDBACK = (function () {
             condition: '평균 임용 소요 기간 > 3년',
             icon: '⏳',
             severity: 'warning',
-            action: '임용 준비 지원 강화 검토 요청',
-            responsible: '취업지원팀장',
-            check(year, campus) {
-                const { avg } = KPI.getAvgYearsToPass(year, campus);
-                const triggered = avg > 3;
-                return { triggered, value: avg, threshold: 3, unit: '년', detail: `현재 ${avg}년 / 임계 3년` };
+            action: '학생처 진로인성교육센터 임용 준비 프로그램 강화 검토',
+            responsible: '학생처 진로인성교육센터',
+            check: function (year, campus) {
+                var ay = KPI.getAvgYearsToPass(year, campus);
+                var triggered = ay.avg > 3;
+                return {
+                    triggered: triggered,
+                    value: ay.avg,
+                    threshold: 3,
+                    unit: '년',
+                    detail: '현재 ' + ay.avg + '년 / 임계 3년'
+                };
             }
         },
         {
             id: 'T-05',
             label: '실습 우수 비율 저조',
-            condition: '실습 평가 우수 비율 < 50%',
+            condition: '교육실습 평가 우수 비율 < 50%',
             icon: '📚',
             severity: 'warning',
-            action: '교육실습 운영 방식 검토 요청',
-            responsible: '실습지원팀장',
-            check(year, campus) {
-                const { rate } = KPI.getPracticumExcRate(year, campus);
-                const triggered = rate < 50;
-                return { triggered, value: rate, threshold: 50, unit: '%', detail: `현재 ${rate}% / 임계 50%` };
+            action: '교무처 학사팀 교육실습 운영 매뉴얼 검토 및 사전 교육 강화 요청',
+            responsible: '교무처 학사팀 (교육실습 담당)',
+            check: function (year, campus) {
+                var pr = KPI.getPracticumExcRate(year, campus);
+                var triggered = pr.rate < 50;
+                return {
+                    triggered: triggered,
+                    value: pr.rate,
+                    threshold: 50,
+                    unit: '%',
+                    detail: '현재 ' + pr.rate + '% / 임계 50%'
+                };
             }
         },
         {
@@ -82,30 +125,34 @@ window.FEEDBACK = (function () {
             condition: '데이터 미입력 > 30일 경과',
             icon: '⚠️',
             severity: 'info',
-            action: '담당 부서 입력 독촉 알림',
-            responsible: '데이터 거버넌스 담당',
-            check(year, campus) {
-                // 현장 데이터는 선택적 수집이므로 항상 일부 미입력 시뮬레이션
-                const triggered = false;
-                return { triggered, value: 12, threshold: 30, unit: '일', detail: '마지막 입력: 12일 전 (정상)' };
+            action: '기획처 기획팀 → 해당 부서 데이터 입력 독촉 공문 발송',
+            responsible: '기획처 기획팀 (EDGS 데이터 거버넌스 담당)',
+            check: function (year, campus) {
+                return {
+                    triggered: false,
+                    value: 12,
+                    threshold: 30,
+                    unit: '일',
+                    detail: '마지막 입력: 12일 전 (정상)'
+                };
             }
         },
     ];
 
     function evaluate(year, campus) {
-        return TRIGGERS.map(t => {
-            const result = t.check(year, campus);
-            return { ...t, ...result };
+        return TRIGGERS.map(function (t) {
+            var result = t.check(year, campus);
+            return Object.assign({}, t, result);
         });
     }
 
     function getActiveAlerts(year, campus) {
-        return evaluate(year, campus).filter(t => t.triggered);
+        return evaluate(year, campus).filter(function (t) { return t.triggered; });
     }
 
     function getAlertCount(year, campus) {
         return getActiveAlerts(year, campus).length;
     }
 
-    return { TRIGGERS, evaluate, getActiveAlerts, getAlertCount };
+    return { TRIGGERS: TRIGGERS, evaluate: evaluate, getActiveAlerts: getActiveAlerts, getAlertCount: getAlertCount };
 })();

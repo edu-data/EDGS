@@ -11,12 +11,12 @@ const APP_STATE = {
 
 const ROLE_META = {
     admin: { name: '시스템 관리자', initial: '관', color: '#3B6FE8' },
-    president: { name: '총장·처장', initial: '총', color: '#F59E0B' },
-    academic: { name: '교학처 담당자', initial: '교', color: '#10B981' },
-    admission: { name: '입학처 담당자', initial: '입', color: '#6366F1' },
-    career: { name: '취업지원 담당자', initial: '취', color: '#EC4899' },
-    professor: { name: '지도교수', initial: '교', color: '#F97316' },
-    researcher: { name: '연구자', initial: '연', color: '#8B98B8' },
+    president: { name: '총장·부총장', initial: '총', color: '#F59E0B' },
+    academic: { name: '교무처 담당자', initial: '교', color: '#10B981' },
+    admission: { name: '입학본부 담당자', initial: '입', color: '#6366F1' },
+    career: { name: '학생처 진로인성교육센터 담당자', initial: '진', color: '#EC4899' },
+    professor: { name: '지도교수', initial: '수', color: '#F97316' },
+    researcher: { name: '연구자 (교육혁신본부)', initial: '연', color: '#8B98B8' },
 };
 
 // ── 로그인 ────────────────────────────────────────────────
