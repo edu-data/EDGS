@@ -95,25 +95,31 @@ window.KPI = (function () {
     }
 
     // 연도별 임용합격률 시계열 (차트용)
+    // 전국 교대 평균 임용합격률 (출처: 교육부 교원통계, 2024=51.7%)
+    var NATIONAL_AVG = { 2020: 58.2, 2021: 55.0, 2022: 52.1, 2023: 50.4, 2024: 51.7, 2025: 50.0 };
     function getPassRateTrend() {
-        return [2019, 2020, 2021, 2022, 2023, 2024].map(y => ({
-            year: y,
-            rate: MOCK.kpiSummary[y].passRate,
-            national: 65.0, // 전국 평균 (가상)
-        }));
+        return [2020, 2021, 2022, 2023, 2024, 2025].map(function (y) {
+            return {
+                year: y,
+                rate: MOCK.kpiSummary[y] ? MOCK.kpiSummary[y].passRate : null,
+                national: NATIONAL_AVG[y] || 51.7,
+            };
+        });
     }
 
     // 연도별 충원율 시계열 (차트용)
     function getEnrollmentTrend(type) {
         // type: 'undergrad' | 'grad'
-        return [2019, 2020, 2021, 2022, 2023, 2024].map(y => ({
-            year: y,
-            incheon: type === 'undergrad' ?
-                MOCK.admissions.find(r => r.year === y && r.campus === 'incheon' && r.type === '학부')?.rate || 0 :
-                MOCK.admissions.find(r => r.year === y && r.campus === 'incheon' && r.type === '대학원')?.rate || 0,
-            gyeonggi: type === 'undergrad' ?
-                MOCK.admissions.find(r => r.year === y && r.campus === 'gyeonggi' && r.type === '학부')?.rate || 0 : 0,
-        }));
+        return [2020, 2021, 2022, 2023, 2024, 2025].map(function (y) {
+            return {
+                year: y,
+                incheon: type === 'undergrad' ?
+                    (MOCK.admissions.find(function (r) { return r.year === y && r.campus === 'incheon' && r.type === '학부'; }) || {}).rate || 0 :
+                    (MOCK.admissions.find(function (r) { return r.year === y && r.campus === 'incheon' && r.type === '대학원'; }) || {}).rate || 0,
+                gyeonggi: type === 'undergrad' ?
+                    (MOCK.admissions.find(function (r) { return r.year === y && r.campus === 'gyeonggi' && r.type === '학부'; }) || {}).rate || 0 : 0,
+            };
+        });
     }
 
     // 응시 지역 분포 (차트용)
