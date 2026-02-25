@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="경인교육대학교 교육데이터 아카이브 & 거버넌스 시스템 - 임용률·충원율 중심 전주기 데이터 대시보드" />
+  <title>EDGS — 경인교육대학교 교육데이터 거버넌스 시스템</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+      <div class="login-bg-anim"></div>
+      <div class="login-card">
+        <div class="login-logo">
+          <div class="logo-icon">📊</div>
+          <h1 class="login-title">EDGS</h1>
+          <p class="login-subtitle">EduData Governance System</p>
+          <p class="login-univ">경인교육대학교 교육데이터 거버넌스 시스템</p>
+        </div>
+        <div class="login-form">
+          <div class="form-group">
+            <label for="role-select">역할 선택</label>
+            <div class="select-wrapper">
+              <select id="role-select">
+                <option value="admin">시스템 관리자</option>
+                <option value="president">총장·처장</option>
+                <option value="academic" selected>교학처 담당자</option>
+                <option value="admission">입학처 담당자</option>
+                <option value="career">취업지원 담당자</option>
+                <option value="professor">지도교수</option>
+                <option value="researcher">연구자</option>
+              </select>
+              <span class="select-arrow">▾</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="user-id">사용자 ID</label>
+            <input type="text" id="user-id" value="user@ginue.ac.kr" placeholder="아이디 입력" />
+          </div>
+          <div class="form-group">
+            <label for="user-pw">비밀번호</label>
+            <input type="password" id="user-pw" value="••••••••" placeholder="비밀번호 입력" />
+          </div>
+          <button id="login-btn" class="login-btn">
+            <span>로그인</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+        <p class="login-note">⚠️ 본 시스템은 역할 기반 접근 통제(RBAC)가 적용되어 있습니다.<br />모든 접속 기록은 감사 로그에 저장됩니다.</p>
+      </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="main-app" class="main-app hidden">
+      <!-- Sidebar -->
+      <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-logo">
+            <span class="sidebar-logo-icon">📊</span>
+            <div>
+              <div class="sidebar-title">EDGS</div>
+              <div class="sidebar-subtitle">경인교육대학교</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-user" id="sidebar-user">
+          <div class="user-avatar" id="user-avatar">관</div>
+          <div class="user-info">
+            <div class="user-name" id="user-name">관리자</div>
+            <div class="user-role" id="user-role-badge">시스템 관리자</div>
+          </div>
+        </div>
+
+        <div class="sidebar-menu">
+          <div class="menu-section-title">대시보드</div>
+          <nav class="menu-items" id="menu-items">
+            <a href="#" class="menu-item active" data-page="d01" id="menu-d01">
+              <span class="menu-icon">🏠</span>
+              <span class="menu-label">D-01 종합 현황</span>
+            </a>
+            <a href="#" class="menu-item" data-page="d02" id="menu-d02">
+              <span class="menu-icon">🎯</span>
+              <span class="menu-label">D-02 임용 분석</span>
+            </a>
+            <a href="#" class="menu-item" data-page="d03" id="menu-d03">
+              <span class="menu-icon">📈</span>
+              <span class="menu-label">D-03 충원율 모니터링</span>
+            </a>
+            <a href="#" class="menu-item" data-page="d04" id="menu-d04">
+              <span class="menu-icon">👤</span>
+              <span class="menu-label">D-04 학생 생애주기</span>
+            </a>
+            <a href="#" class="menu-item" data-page="d05" id="menu-d05">
+              <span class="menu-icon">🌐</span>
+              <span class="menu-label">D-05 비임용 진로</span>
+            </a>
+            <a href="#" class="menu-item" data-page="d06" id="menu-d06">
+              <span class="menu-icon">🔄</span>
+              <span class="menu-label">D-06 환류 리포트</span>
+            </a>
+          </nav>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="system-status">
+            <div class="status-dot"></div>
+            <span>시스템 정상 운영 중</span>
+          </div>
+          <button id="logout-btn" class="logout-btn">로그아웃</button>
+        </div>
+      </nav>
+
+      <!-- Content Area -->
+      <div class="content-wrapper">
+        <!-- Top Header -->
+        <header class="top-header">
+          <div class="header-left">
+            <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
+            <div class="breadcrumb" id="breadcrumb">종합 현황</div>
+          </div>
+          <div class="header-center">
+            <div class="global-filter">
+              <select id="filter-year" class="filter-select" title="기준 연도">
+                <option value="all">전체 연도</option>
+                <option value="2024" selected>2024년</option>
+                <option value="2023">2023년</option>
+                <option value="2022">2022년</option>
+                <option value="2021">2021년</option>
+                <option value="2020">2020년</option>
+              </select>
+              <select id="filter-campus" class="filter-select" title="캠퍼스">
+                <option value="all" selected>전체 캠퍼스</option>
+                <option value="incheon">인천</option>
+                <option value="gyeonggi">경기</option>
+              </select>
+              <select id="filter-type" class="filter-select" title="전형 유형">
+                <option value="all" selected>전체 전형</option>
+                <option value="수시">수시</option>
+                <option value="정시">정시</option>
+                <option value="특별">특별</option>
+              </select>
+            </div>
+          </div>
+          <div class="header-right">
+            <button class="header-btn" id="alert-btn" title="알림">
+              🔔 <span class="alert-badge" id="alert-badge">3</span>
+            </button>
+            <button class="header-btn" title="내보내기">📥</button>
+            <span class="header-time" id="header-time"></span>
+          </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="page-content" id="page-content">
+          <!-- Dynamically rendered -->
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/kpi.js"></script>
+  <script src="js/feedback.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
