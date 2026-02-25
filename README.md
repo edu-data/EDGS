@@ -7,6 +7,7 @@
 [![Status](https://img.shields.io/badge/Status-v1.0%20Released-brightgreen)](#)
 [![Phase](https://img.shields.io/badge/Phase-1%20MVP-orange)](#)
 [![Purpose](https://img.shields.io/badge/Purpose-Research%20Prototype-blueviolet)](#)
+[![Live Demo](https://img.shields.io/badge/🌐%20Live%20Demo-edu--data.github.io%2FEDGS-4A90E2)](https://edu-data.github.io/EDGS/)
 
 > [!NOTE]
 > **연구용 프로토타입 안내 (Research Prototype)**
@@ -41,7 +42,13 @@
 
 ---
 
-## 🖥️ 데모 스크린샷
+## 🌐 라이브 데모
+
+> **[→ https://edu-data.github.io/EDGS/](https://edu-data.github.io/EDGS/)**
+>
+> 위 링크에서 브라우저로 바로 실행해 볼 수 있습니다. 서버·설치 불필요.
+
+## 🖥️ 대시보드 구성
 
 ### D-01 종합 현황 (Executive Summary)
 
@@ -70,15 +77,22 @@ KPI 카드 4개 · 임용합격률 5년 추이 · 충원율 게이지 · 지역 
 
 ### 실행 방법
 
+**방법 1 — 라이브 데모 (권장)**
+
+브라우저에서 아래 링크를 열어 즉시 사용합니다:
+
+👉 **[https://edu-data.github.io/EDGS/](https://edu-data.github.io/EDGS/)**
+
+**방법 2 — 로컬 실행**
+
 ```bash
 # 저장소 클론
 git clone https://github.com/edu-data/EDGS.git
 
-# 브라우저에서 열기 (더블클릭 또는 드래그 앤 드롭)
-open index.html
+# index.html을 브라우저에서 열기 (더블클릭 또는 드래그 앤 드롭)
+open index.html  # macOS
+start index.html # Windows
 ```
-
-또는 **`index.html` 파일을 웹 브라우저에서 직접 열면** 즉시 실행됩니다.
 
 ### 로그인
 
