@@ -280,12 +280,12 @@ window.PAGES = (function () {
     <div class="charts-grid charts-grid-2 fade-in fade-in-d1">
       <div class="chart-card">
         <div class="chart-title">학부·대학원 충원율 게이지</div>
-        <div class="chart-subtitle">현재 기준년도 충원율</div>
+        <div class="chart-subtitle">현재 기준년도 충원율 (전체 합산)</div>
         <div class="chart-body-lg" id="chart-d03-gauge" style="height:300px"></div>
       </div>
       <div class="chart-card">
         <div class="chart-title">충원율 5년 추이</div>
-        <div class="chart-subtitle">인천·경기 캠퍼스 학부 충원율 변화</div>
+        <div class="chart-subtitle">경인교육대학교 전체 합산 (인천+경기) 학부 충원율</div>
         <div class="chart-body-lg" id="chart-d03-trend" style="height:300px"></div>
       </div>
     </div>
@@ -293,37 +293,46 @@ window.PAGES = (function () {
     <div class="charts-grid charts-grid-2 fade-in fade-in-d2">
       <div class="chart-card">
         <div class="chart-title">대학원 충원율 추이</div>
-        <div class="chart-subtitle">인천 대학원 연도별 충원 현황</div>
+        <div class="chart-subtitle">연도별 대학원 충원 현황 (실제 공시 기반)</div>
         <div class="chart-body" id="chart-d03-grad-trend"></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">캠퍼스별 연도별 등록 인원</div>
-        <div class="chart-subtitle">학부 실등록 인원 비교</div>
+        <div class="chart-title">연도별 총 등록 인원</div>
+        <div class="chart-subtitle">학부 전체 (인천+경기 합산) 실등록 인원</div>
         <div class="chart-body" id="chart-d03-enrolled"></div>
       </div>
     </div>
 
     <div class="data-table-wrapper fade-in fade-in-d3">
       <div class="data-table-header">
-        <span class="data-table-title">📋 연도별 충원율 상세</span>
+        <span class="data-table-title">📋 연도별 충원율 상세 (전체 합산 기준)</span>
+        <small style="color:var(--text-muted);margin-left:8px">※ 경인교대 학부: 1~2학년 인천 / 3~4학년 경기 캠퍼스 — 합산 단일값 표기</small>
       </div>
       <table class="data-table">
         <thead><tr>
-          <th>연도</th><th>캠퍼스</th><th>구분</th><th>입학정원</th><th>실등록</th><th>충원율</th><th>중도탈락</th><th>상태</th>
+          <th>연도</th><th>입학정원 (합산)</th><th>실등록 (합산)</th><th>충원율</th><th>인천 등록</th><th>경기 등록</th><th>대학원 충원율</th><th>상태</th>
         </tr></thead>
         <tbody>
-          ${MOCK.admissions.filter(r => (year === 'all' || r.year === parseInt(year)) && (campus === 'all' || r.campus === campus)).map(r => {
-      const ok = r.type === '학부' ? r.rate >= 98 : r.rate >= 80;
-      return `<tr>
-              <td><b>${r.year}년</b></td>
-              <td>${r.campus === 'incheon' ? '인천' : '경기'}</td>
-              <td>${r.type}</td>
-              <td>${r.quota}명</td>
-              <td>${r.enrolled}명</td>
-              <td><b>${r.rate}%</b></td>
-              <td>${r.dropout}명</td>
-              <td>${ok ? badge('정상', 'success') : badge('주의', 'danger')}</td>
-            </tr>`;
+          ${[2020, 2021, 2022, 2023, 2024, 2025].map(function (y) {
+      var uRows = MOCK.admissions.filter(function (r) { return r.year === y && r.type === '학부'; });
+      var gRow = MOCK.admissions.find(function (r) { return r.year === y && r.type === '대학원'; });
+      var totalQuota = uRows.reduce(function (s, r) { return s + (r.quota || 0); }, 0);
+      var totalEnrolled = uRows.reduce(function (s, r) { return s + (r.enrolled || 0); }, 0);
+      var totalRate = totalQuota > 0 ? ((totalEnrolled / totalQuota) * 100).toFixed(1) : 0;
+      var icEnr = (uRows.find(function (r) { return r.campus === 'incheon'; }) || {}).enrolled || 0;
+      var gyEnr = (uRows.find(function (r) { return r.campus === 'gyeonggi'; }) || {}).enrolled || 0;
+      var gradR = gRow ? gRow.rate + '%' : '—';
+      var ok = totalRate >= 95;
+      return '<tr>' +
+        '<td><b>' + y + '년</b></td>' +
+        '<td>' + totalQuota + '명</td>' +
+        '<td><b>' + totalEnrolled + '명</b></td>' +
+        '<td><b style="color:' + (ok ? '#10B981' : '#F97316') + '">' + totalRate + '%</b></td>' +
+        '<td>' + icEnr + '명 <small>(인천)</small></td>' +
+        '<td>' + gyEnr + '명 <small>(경기)</small></td>' +
+        '<td>' + gradR + '</td>' +
+        '<td>' + (ok ? badge('정상', 'success') : badge('주의', 'warning')) + '</td>' +
+        '</tr>';
     }).join('')}
         </tbody>
       </table>
@@ -336,35 +345,36 @@ window.PAGES = (function () {
       ]);
 
       const uTrend = KPI.getEnrollmentTrend('undergrad');
+      // 충원율 5년 추이 — 합산 단일 라인
       CHARTS.lineChart('chart-d03-trend',
-        uTrend.map(t => t.year),
+        uTrend.map(function (t) { return t.year; }),
         [
-          { name: '인천 캠퍼스', data: uTrend.map(t => t.incheon), color: '#3B6FE8', area: true },
-          { name: '경기 캠퍼스', data: uTrend.map(t => t.gyeonggi), color: '#10B981', area: true },
-          { name: '목표(98%)', data: uTrend.map(() => 98), color: '#F59E0B' },
+          { name: '학부 충원율 (전체)', data: uTrend.map(function (t) { return t.total; }), color: '#3B6FE8', area: true },
+          { name: '목표(98%)', data: uTrend.map(function () { return 98; }), color: '#F59E0B' },
         ],
         { yMin: 85, yMax: 110 }
       );
 
       const gTrend = KPI.getEnrollmentTrend('grad');
       CHARTS.lineChart('chart-d03-grad-trend',
-        gTrend.map(t => t.year),
+        gTrend.map(function (t) { return t.year; }),
         [
-          { name: '대학원 충원율', data: gTrend.map(t => t.incheon), color: '#EC4899', area: true },
-          { name: '목표(80%)', data: gTrend.map(() => 80), color: '#F59E0B' },
+          { name: '대학원 충원율', data: gTrend.map(function (t) { return t.total; }), color: '#EC4899', area: true },
+          { name: '목표(80%)', data: gTrend.map(function () { return 80; }), color: '#F59E0B' },
         ],
         { yMin: 65, yMax: 100 }
       );
 
-      const years = [2019, 2020, 2021, 2022, 2023, 2024];
-      const getEnrolled = (y, c, t) => MOCK.admissions.find(r => r.year === y && r.campus === c && r.type === t)?.enrolled || 0;
+      // 연도별 등록 인원 — 합산 총계 바차트
+      var years2 = [2020, 2021, 2022, 2023, 2024, 2025];
       CHARTS.barChart('chart-d03-enrolled',
-        years.map(String),
+        years2.map(String),
         [
-          { name: '인천 학부', data: years.map(y => getEnrolled(y, 'incheon', '학부')), color: '#3B6FE8' },
-          { name: '경기 학부', data: years.map(y => getEnrolled(y, 'gyeonggi', '학부')), color: '#10B981' },
+          { name: '총 등록 인원 (합산)', data: uTrend.map(function (t) { return t.enrolled; }), color: '#3B6FE8' },
+          { name: '인천 등록', data: uTrend.map(function (t) { return t.icEnrolled; }), color: '#6366F1' },
+          { name: '경기 등록', data: uTrend.map(function (t) { return t.gyEnrolled; }), color: '#10B981' },
         ],
-        { yMax: 220, unit: '명' }
+        { yMax: 600, unit: '명' }
       );
     }, 100);
   }

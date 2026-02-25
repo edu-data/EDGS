@@ -108,16 +108,28 @@ window.KPI = (function () {
     }
 
     // 연도별 충원율 시계열 (차트용)
+    // ※ 경인교대 학부: 1~2학년=인천케퍼스, 3~4학년=경기케퍼스 (1개 대학, 2자리)
+    //    → 학부 충원율 대표값 = 인천+경기 정원 합산 기준
     function getEnrollmentTrend(type) {
-        // type: 'undergrad' | 'grad'
         return [2020, 2021, 2022, 2023, 2024, 2025].map(function (y) {
+            var ic = MOCK.admissions.find(function (r) {
+                return r.year === y && r.campus === 'incheon' && r.type === (type === 'undergrad' ? '학부' : '대학원');
+            }) || {};
+            var gy = type === 'undergrad' ? (MOCK.admissions.find(function (r) {
+                return r.year === y && r.campus === 'gyeonggi' && r.type === '학부';
+            }) || {}) : {};
+            var totalQuota = (ic.quota || 0) + (gy.quota || 0);
+            var totalEnrolled = (ic.enrolled || 0) + (gy.enrolled || 0);
+            var totalRate = totalQuota > 0 ? +((totalEnrolled / totalQuota) * 100).toFixed(1) : 0;
             return {
                 year: y,
-                incheon: type === 'undergrad' ?
-                    (MOCK.admissions.find(function (r) { return r.year === y && r.campus === 'incheon' && r.type === '학부'; }) || {}).rate || 0 :
-                    (MOCK.admissions.find(function (r) { return r.year === y && r.campus === 'incheon' && r.type === '대학원'; }) || {}).rate || 0,
-                gyeonggi: type === 'undergrad' ?
-                    (MOCK.admissions.find(function (r) { return r.year === y && r.campus === 'gyeonggi' && r.type === '학부'; }) || {}).rate || 0 : 0,
+                incheon: ic.rate || 0,
+                gyeonggi: gy.rate || 0,
+                total: type === 'undergrad' ? totalRate : (ic.rate || 0), // 합산 대표값
+                quota: totalQuota,
+                enrolled: totalEnrolled,
+                icEnrolled: ic.enrolled || 0,
+                gyEnrolled: gy.enrolled || 0,
             };
         });
     }
