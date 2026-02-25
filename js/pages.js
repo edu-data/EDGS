@@ -698,13 +698,14 @@ window.PAGES = (function () {
   // ─── RBAC 접근 제어 ──────────────────────────────────────
 
   const ROLE_ACCESS = {
+    // d01(종합현황), d03(충원율), d05(비임용진로) — 모든 역할 공통 접근 허용
     admin: { d01: true, d02: true, d03: true, d04: true, d05: true, d06: true },
-    president: { d01: true, d02: true, d03: true, d04: false, d05: false, d06: true },
-    academic: { d01: false, d02: true, d03: false, d04: true, d05: false, d06: true },
-    admission: { d01: true, d02: false, d03: true, d04: false, d05: false, d06: false },
-    career: { d01: false, d02: true, d03: false, d04: false, d05: true, d06: false },
-    professor: { d01: false, d02: false, d03: false, d04: true, d05: false, d06: false },
-    researcher: { d01: false, d02: true, d03: false, d04: false, d05: true, d06: true },
+    president: { d01: true, d02: true, d03: true, d04: false, d05: true, d06: true },
+    academic: { d01: true, d02: true, d03: true, d04: true, d05: true, d06: true },
+    admission: { d01: true, d02: false, d03: true, d04: false, d05: true, d06: false },
+    career: { d01: true, d02: true, d03: true, d04: false, d05: true, d06: false },
+    professor: { d01: true, d02: false, d03: true, d04: true, d05: true, d06: false },
+    researcher: { d01: true, d02: true, d03: true, d04: false, d05: true, d06: true },
   };
 
   function canAccess(role, page) {
